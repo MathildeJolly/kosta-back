@@ -35,4 +35,7 @@ class AlbumController extends Controller
         ]);
         return $this->albumRepository->store($request->all());
     }
+    public function delete($slug){
+        return $this->albumRepository->delete($slug);
+    }
 }
