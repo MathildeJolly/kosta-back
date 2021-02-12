@@ -29,4 +29,9 @@ class Album extends Model implements HasMedia
     {
         return 'slug';
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class);
+    }
 }
