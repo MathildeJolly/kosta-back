@@ -22,4 +22,9 @@ class AlbumRepository implements BaseRepository {
     {
         return $this->model->all();
     }
+
+    public function findBySlug($slug)
+    {
+        return $this->model->where('slug', $slug);
+    }
 }

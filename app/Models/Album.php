@@ -15,7 +15,7 @@ class Album extends Model implements HasMedia
     use HasSlug;
     // Remplir le Fillable avec les différents nom de colonnes de la DB ex : 'name'
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'slug'];
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()

@@ -18,8 +18,13 @@ class AlbumController extends Controller
     /**
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
-    public function index()
+    public function all()
     {
         return AlbumResource::collection($this->albumRepository->all());
+    }
+
+    public function show($slug)
+    {
+        return new AlbumResource($this->albumRepository->findBySlug($slug)->first());
     }
 }
