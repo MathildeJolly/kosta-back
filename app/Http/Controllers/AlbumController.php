@@ -27,4 +27,10 @@ class AlbumController extends Controller
     {
         return new AlbumResource($this->albumRepository->findBySlug($slug)->first());
     }
+
+    public function store(Request $request)
+    {
+        dd($request->all());
+        return $this->albumRepository->store($request->all());
+    }
 }

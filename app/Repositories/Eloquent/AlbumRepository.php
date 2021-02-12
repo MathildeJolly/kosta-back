@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Album;
 use App\Repositories\BaseRepository;
+use Illuminate\Http\Request;
 
 class AlbumRepository implements BaseRepository {
 
@@ -26,5 +27,14 @@ class AlbumRepository implements BaseRepository {
     public function findBySlug($slug)
     {
         return $this->model->where('slug', $slug);
+    }
+
+    public function store($data)
+    {
+        $this->validate($data, [
+            'name' => 'required',
+        ]);
+
+        return $this->model->create($data);
     }
 }

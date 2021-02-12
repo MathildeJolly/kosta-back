@@ -19,5 +19,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('albums', [AlbumController::class, "all"]);
-Route::get('albums/{slug}', [AlbumController::class, "show"]);
+Route::post('/albums', [AlbumController::class, 'store']);
+Route::get('albums', [AlbumController::class, 'all']);
+Route::get('albums/{slug}', [AlbumController::class, 'show']);
