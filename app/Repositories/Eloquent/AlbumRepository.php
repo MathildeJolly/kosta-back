@@ -21,12 +21,12 @@ class AlbumRepository implements BaseRepository {
 
     public function all()
     {
-        return $this->model->all();
+        return $this->model->with('users')->get();
     }
 
     public function findBySlug($slug)
     {
-        return $this->model->where('slug', $slug);
+        return $this->model->where('slug', $slug)->with('users')->get();
     }
 
     public function store($data)
