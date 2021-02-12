@@ -31,10 +31,6 @@ class AlbumRepository implements BaseRepository {
 
     public function store($data)
     {
-        $this->validate($data, [
-            'name' => 'required',
-        ]);
-
         return $this->model->create($data);
     }
 }
