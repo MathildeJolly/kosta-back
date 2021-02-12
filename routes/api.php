@@ -21,4 +21,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::post('albums', [AlbumController::class, 'store']);
 Route::get('albums', [AlbumController::class, 'all']);
+Route::put('albums/{id}', [AlbumController::class, 'update']);
+Route::delete('albums/{id}', [AlbumController::class, 'delete']);
 Route::get('albums/{slug}', [AlbumController::class, 'show']);

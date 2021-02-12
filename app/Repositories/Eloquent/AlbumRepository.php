@@ -33,4 +33,15 @@ class AlbumRepository implements BaseRepository {
     {
         return $this->model->create($data);
     }
+
+    public function delete($id)
+    {
+        return $this->model->find($id)->delete();
+    }
+
+    public function update($data, $id)
+    {
+        $this->model->find($id)->update($data);
+        return $this->model->find($id);
+    }
 }

@@ -33,9 +33,21 @@ class AlbumController extends Controller
         $request->validate([
             'name' => 'required',
         ]);
-        return $this->albumRepository->store($request->all());
+        return (new AlbumResource($this->albumRepository->store($request->all())))->additional(['message' => "L'album a bien été créé"]);
     }
-    public function delete($slug){
-        return $this->albumRepository->delete($slug);
+
+    public function delete($id)
+    {
+        $this->albumRepository->delete($id);
+        return response()->json(['message' => "L'album a bien été supprimé"]);
+    }
+
+    public function update(Request $request, $id)
+    {
+
+        $request->validate([
+            'name' => 'required',
+        ]);
+        return (new AlbumResource($this->albumRepository->update($request->all(), $id)))->additional(['message' => "L'album a bien été mis à jour"]);
     }
 }
