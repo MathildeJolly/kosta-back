@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AlbumController;
-use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,16 +15,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
+Route::post('/tokens/create', function (Request $request) {
+    $token = $request->user()->createToken($request->token_name);
+
+    return ['token' => $token->plainTextToken];
+});
+
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-//Route User
-Route::get('users', [UserController::class, 'all']);
-
-//Route Album
-Route::post('albums', [AlbumController::class, 'store']);
-Route::get('albums', [AlbumController::class, 'all']);
-Route::put('albums/{id}', [AlbumController::class, 'update']);
-Route::delete('albums/{id}', [AlbumController::class, 'delete']);
-Route::get('albums/{slug}', [AlbumController::class, 'show']);
+Route::get('albums', [AlbumController::class, "all"]);
+Route::get('albums/{slug}', [AlbumController::class, "show"]);
+Route::post('login', [AuthController::class, "login"]);
+Route::post('register', [AuthController::class, "register"]);
