@@ -7,10 +7,26 @@ use Illuminate\Http\Request;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
+    // Login function
+    public function __invoke(Request $request): String
+    {
+        if (!auth()->attempt($request->only('email', 'password'))) {
+            throw new AuthenticationException();
+        }
+
+        $user = User::where('email', $request->email)->first();
+
+        $token = $user->createToken($request->email);
+
+        return $token;
+    }
+
     /**
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
@@ -30,29 +46,13 @@ class AuthController extends Controller
         return new UserResource($user);
     }
 
-    public function login(Request $request)
-    {
-        $request->validate([
-            'email'   => "required|string",
-            "password" => "required|string"
-        ]);
-
-
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'message' => 'Invalid login details'
-            ], 401);
-        }
-
-        $token = $user->createToken($request->email);
-
-        return $token;
-    }
-
     public function show()
     {
+        if (!Auth::user()) {
+            return response()->json([
+                'message' => 'You must be authenticated'
+            ], 4401);
+        }
         $userId = Auth::user()->id;
 
         $user = User::whereId($userId)->first();
