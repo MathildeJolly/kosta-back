@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -25,7 +26,17 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('user/show', [AuthController::class, "show"]);
+    Route::patch('user/update/profile', [AuthController::class, "updateProfile"]);
+    Route::patch('user/update/password', [AuthController::class, "updatePassword"]);
+    Route::delete('user/delete', [AuthController::class, "delete"]);
+});
+
+
+Route::post('/login', AuthController::class);
+Route::post('logout', [AuthController::class, "logout"]);
+Route::post('register', [AuthController::class, "register"]);
+
 Route::get('albums', [AlbumController::class, "all"]);
 Route::get('albums/{slug}', [AlbumController::class, "show"]);
-Route::post('login', [AuthController::class, "login"]);
-Route::post('register', [AuthController::class, "register"]);

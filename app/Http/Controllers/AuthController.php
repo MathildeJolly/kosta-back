@@ -6,10 +6,27 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
+    // Login function
+    public function __invoke(Request $request): String
+    {
+        if (!auth()->attempt($request->only('email', 'password'))) {
+            throw new AuthenticationException();
+        }
+
+        $user = User::where('email', $request->email)->first();
+
+        $token = $user->createToken($request->email);
+
+        return $token;
+    }
+
     /**
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
@@ -29,17 +46,55 @@ class AuthController extends Controller
         return new UserResource($user);
     }
 
-    public function login(Request $request)
+    public function show()
+    {
+        if (!Auth::user()) {
+            return response()->json([
+                'message' => 'You must be authenticated'
+            ], 4401);
+        }
+        $userId = Auth::user()->id;
+
+        $user = User::whereId($userId)->first();
+
+        return new UserResource($user);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $userId = Auth::user()->id;
+
+        User::whereId($userId)->update($request->toArray());
+
+        return response()->json([
+            'message' => 'Successfully updated'
+        ], 200);
+    }
+
+    public function updatePassword(Request $request)
     {
         $request->validate([
-            'email'   => "required|string",
-            "password" => "required|string"
+            'password' => 'required',
         ]);
 
-        $user = User::where('email', $request->email)->firstOrFail();
+        $userId = Auth::user()->id;
 
-        $token = $user->createToken($request->email);
+        User::whereId($userId)->update(['password' => Hash::make($request->password)]);
 
-        return $token;
+         return response()->json([
+            'message' => 'Successfully updated'
+        ], 200);
     }
+
+    public function delete()
+    {
+        $userId = Auth::user()->id;
+
+        User::find($userId)->delete();
+
+        return response()->json([
+            'message' => 'Successfully deleted'
+        ], 200);
+    }
+
 }
