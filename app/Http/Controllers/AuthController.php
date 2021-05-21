@@ -14,10 +14,12 @@ use Laravel\Sanctum\PersonalAccessToken;
 class AuthController extends Controller
 {
     // Login function
-    public function __invoke(Request $request)
+    public function login(Request $request)
     {
         if (!auth()->attempt($request->only('email', 'password'))) {
-            throw new AuthenticationException();
+            return response()->json([
+                'message' => 'Wrong creditentials'
+            ], 401);
         }
 
         $user = User::where('email', $request->email)->first();
@@ -51,7 +53,7 @@ class AuthController extends Controller
         if (!Auth::user()) {
             return response()->json([
                 'message' => 'You must be authenticated'
-            ], 4401);
+            ], 401);
         }
         $userId = Auth::user()->id;
 
