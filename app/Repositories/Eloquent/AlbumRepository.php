@@ -44,4 +44,9 @@ class AlbumRepository implements BaseRepository {
         $this->model->find($id)->update($data);
         return $this->model->find($id);
     }
+
+    public function getUserAlbums()
+    {
+        return auth()->user()->albums;
+    }
 }

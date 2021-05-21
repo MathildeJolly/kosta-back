@@ -31,12 +31,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('user/update/profile', [AuthController::class, "updateProfile"]);
     Route::patch('user/update/password', [AuthController::class, "updatePassword"]);
     Route::delete('user/delete', [AuthController::class, "delete"]);
-});
 
+    Route::post('album', [AlbumController::class, "store"]);
+    Route::get('albums', [AlbumController::class, "all"]);
+});
 
 Route::post('login', [AuthController::class, "login"]);
 Route::post('logout', [AuthController::class, "logout"]);
 Route::post('register', [AuthController::class, "register"]);
 
-Route::get('albums', [AlbumController::class, "all"]);
 Route::get('albums/{slug}', [AlbumController::class, "show"]);
