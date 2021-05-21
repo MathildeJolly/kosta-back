@@ -20,7 +20,7 @@ class AlbumController extends Controller
      */
     public function all()
     {
-        return AlbumResource::collection($this->albumRepository->all());
+        return AlbumResource::collection($this->albumRepository->getUserAlbums());
     }
 
     public function show($slug)
@@ -33,7 +33,14 @@ class AlbumController extends Controller
         $request->validate([
             'name' => 'required',
         ]);
-        return (new AlbumResource($this->albumRepository->store($request->all())))->additional(['message' => "L'album a bien été créé"]);
+
+        $album = $this->albumRepository->store($request->all());
+
+        $album->users()->sync([
+            auth()->user()->id
+        ]);
+
+        return (new AlbumResource($album))->additional(['message' => "L'album a bien été créé"]);
     }
 
     public function delete($id)
