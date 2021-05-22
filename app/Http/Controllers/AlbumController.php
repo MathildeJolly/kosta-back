@@ -20,6 +20,7 @@ class AlbumController extends Controller
      */
     public function all()
     {
+        // return $this->albumRepository->getUserAlbums();
         return AlbumResource::collection($this->albumRepository->getUserAlbums());
     }
 
@@ -35,6 +36,15 @@ class AlbumController extends Controller
         ]);
 
         $album = $this->albumRepository->store($request->all());
+
+        if ($request->photos) {
+            $album->addMultipleMediaFromRequest(['photos'])
+                // ->usingFileName(substr(md5(rand()), 0, 7))
+                ->each(function ($fileAdder) {
+                    $fileAdder->toMediaCollection('photo');
+                }
+            );
+        }
 
         $album->users()->sync([
             auth()->user()->id
