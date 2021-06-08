@@ -36,6 +36,11 @@ class Album extends Model implements HasMedia
         return $this->belongsToMany(User::class);
     }
 
+    public function medias()
+    {
+        return $this->hasMany(Media::class, 'model_id');
+    }
+
     public function registerMediaConversions(Media $media = null): void
     {
         $this->addMediaConversion('thumb')
