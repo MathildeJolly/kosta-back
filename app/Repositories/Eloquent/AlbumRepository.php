@@ -5,6 +5,8 @@ namespace App\Repositories\Eloquent;
 use App\Models\Album;
 use App\Repositories\BaseRepository;
 use Illuminate\Http\Request;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use App\Http\Resources\AlbumResource;
 
 class AlbumRepository implements BaseRepository {
 
@@ -47,6 +49,16 @@ class AlbumRepository implements BaseRepository {
 
     public function getUserAlbums()
     {
+        // foreach (auth()->user()->albums as $album) {
+        //     $medias = $album->getMedia('media');
+        //     foreach ($medias as $media) {
+        //         $mediasUrl[] = $media->getUrl();
+        //     }
+        //     dd($album);
+        //     $albums[] = [$album, $mediasUrl];
+        // }
+
+        // return $albums;
         return auth()->user()->albums;
     }
 }

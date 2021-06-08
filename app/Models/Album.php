@@ -40,7 +40,7 @@ class Album extends Model implements HasMedia
     {
         return $this->hasMany(Media::class, 'model_id');
     }
-
+  
     public function registerMediaConversions(Media $media = null): void
     {
         $this->addMediaConversion('thumb')
