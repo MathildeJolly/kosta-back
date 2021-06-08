@@ -3,14 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\AlbumResource;
+use App\Models\Album;
 use App\Repositories\Eloquent\AlbumRepository;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Image;
+use Spatie\MediaLibrary\MediaCollections\FileAdder;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class AlbumController extends Controller
 {
     private $albumRepository;
 
-    public function __construct(AlbumRepository  $albumRepository)
+    public function __construct(AlbumRepository $albumRepository)
     {
         $this->albumRepository = $albumRepository;
     }
@@ -26,7 +32,35 @@ class AlbumController extends Controller
 
     public function show($slug)
     {
-        return new AlbumResource($this->albumRepository->findBySlug($slug)->first());
+        $album = $this->albumRepository->findBySlug($slug)->first();
+        if (!$album) {
+            return $this->returnJsonErreur('Aucun album');
+        }
+
+        return new AlbumResource($album);
+    }
+
+    public function storeFileForAlbum(Request $request, $id)
+    {
+        $album = $this->albumRepository->find($id);
+
+        if ($request->photos) {
+            $album->addMultipleMediaFromRequest(['photos'])
+                ->each(function ($fileAdder, $index) use ($request) {
+                    $res = $fileAdder->toMediaCollection('photo');
+                    $exif = Image::make(public_path() . '/medias/' . $res->id . '/' . $res->file_name)->exif();
+                    if (isset($exif['FileDateTime'])) {
+                        $date = Carbon::parse($exif['FileDateTime'])->format('Y-m-d H:i:s');
+                        DB::table('media')->where('id', $res->id)->update([
+                            'media_date' => $date,
+                        ]);
+                    }
+                }
+                );
+        }
+
+
+        return (new AlbumResource($album))->additional(['message' => "Image ajouté"]);
     }
 
     public function store(Request $request)
@@ -34,7 +68,6 @@ class AlbumController extends Controller
         $request->validate([
             'name' => 'required',
         ]);
-
         $album = $this->albumRepository->store($request->all());
 
         if ($request->photos) {
@@ -43,7 +76,7 @@ class AlbumController extends Controller
                 ->each(function ($fileAdder) {
                     $fileAdder->toMediaCollection('photo');
                 }
-            );
+                );
         }
 
         $album->users()->sync([
@@ -56,6 +89,7 @@ class AlbumController extends Controller
     public function delete($id)
     {
         $this->albumRepository->delete($id);
+
         return response()->json(['message' => "L'album a bien été supprimé"]);
     }
 
@@ -65,6 +99,7 @@ class AlbumController extends Controller
         $request->validate([
             'name' => 'required',
         ]);
+
         return (new AlbumResource($this->albumRepository->update($request->all(), $id)))->additional(['message' => "L'album a bien été mis à jour"]);
     }
 }

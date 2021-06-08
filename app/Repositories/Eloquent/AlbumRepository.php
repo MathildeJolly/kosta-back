@@ -19,6 +19,7 @@ class AlbumRepository implements BaseRepository {
     public function find($id)
     {
         // TODO: Implement find() method.
+        return $this->model->where('id', $id)->firstOrFail();
     }
 
     public function all()

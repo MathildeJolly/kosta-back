@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -22,9 +23,10 @@ class AlbumResource extends JsonResource
             'users' => UserResource::collection($this->whenLoaded('users')),
             'medias' => $this->medias->map(function (Media $media) {
                     return [
-                        $media->collection_name => asset('/media/album/' . $media->file_name)
+                        $media->collection_name => asset('/medias/'. $media->id . '/'. $media->file_name),
+                        'date' =>Carbon::now(),
                     ];
-                })->collapse(),
+                })->toArray(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
