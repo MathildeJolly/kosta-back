@@ -33,6 +33,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('user/delete', [AuthController::class, "delete"]);
 
     Route::post('album', [AlbumController::class, "store"]);
+    Route::post('album/{id}/file', [AlbumController::class, "storeFileForAlbum"]);
+
     Route::get('albums', [AlbumController::class, "all"]);
 });
 

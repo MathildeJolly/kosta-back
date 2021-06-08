@@ -21,6 +21,7 @@ class AlbumResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'users' => UserResource::collection($this->whenLoaded('users')),
+            'sort' => $this->sortFile(),
             'medias' => $this->medias->map(function (Media $media) {
                     return [
                         $media->collection_name => asset('/medias/'. $media->id . '/'. $media->file_name),

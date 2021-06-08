@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
@@ -26,6 +27,21 @@ class Album extends Model implements HasMedia
             ->saveSlugsTo('slug');
     }
 
+
+    public function sortFile()
+    {
+        return collect($this->medias)->groupBy('media_date')->filter(function ($item, $index){
+            return $index;
+        })->map(function($op){
+            return $op->map(function($media){
+                return [
+                    $media->collection_name => asset('/medias/'. $media->id . '/'. $media->file_name),
+                ];
+            });
+
+        });
+
+    }
     public function getRouteKeyName()
     {
         return 'slug';

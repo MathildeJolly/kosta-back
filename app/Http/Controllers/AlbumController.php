@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Image;
 use Spatie\MediaLibrary\MediaCollections\FileAdder;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Webpatser\Uuid\Uuid;
 
 class AlbumController extends Controller
 {
@@ -59,6 +60,20 @@ class AlbumController extends Controller
                 );
         }
 
+        collect($album->medias)->groupBy('media_date')->each(function ($iem) {
+            $uuid = $iem->filter(function ($item) {
+                return $item->chunk_id;
+            })->first()->chunk_id;
+            if (!$uuid) {
+                $uuid = Uuid::generate()->string;
+            }
+            $iem->each(function ($item) use ($uuid) {
+                DB::table('media')->where('id', $item->id)->update([
+                    'chunk_id' => $uuid,
+                ]);
+            });
+
+        });
 
         return (new AlbumResource($album))->additional(['message' => "Image ajouté"]);
     }
