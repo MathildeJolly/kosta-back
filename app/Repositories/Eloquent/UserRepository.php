@@ -19,6 +19,11 @@ class UserRepository implements BaseRepository {
         // TODO: Implement find() method.
     }
 
+    public function findByEmail($email)
+    {
+        return $this->model->where('email', $email)->get();
+    }
+
     public function all()
     {
         return $this->model->with('albums')->get();

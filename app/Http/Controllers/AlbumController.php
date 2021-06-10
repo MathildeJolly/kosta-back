@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\AlbumResource;
 use App\Models\Album;
 use App\Repositories\Eloquent\AlbumRepository;
+use App\Repositories\Eloquent\UserRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,9 +18,10 @@ class AlbumController extends Controller
 {
     private $albumRepository;
 
-    public function __construct(AlbumRepository $albumRepository)
+    public function __construct(AlbumRepository $albumRepository, UserRepository $userRepository)
     {
         $this->albumRepository = $albumRepository;
+        $this->userRepository = $userRepository;
     }
 
     /**
@@ -99,6 +101,25 @@ class AlbumController extends Controller
         ]);
 
         return (new AlbumResource($album))->additional(['message' => "L'album a bien été créé"]);
+    }
+
+    public function collaborators(Request $request, $id)
+    {
+        $album = $this->albumRepository->find($id)->first();
+        if (!$album) {
+            return $this->returnJsonErreur('Aucun album');
+        }
+
+        $collaborator = $this->userRepository->findByEmail($request->email)->first();
+        if (!$collaborator) {
+            return $this->returnJsonErreur('Aucun utilisateur');
+        }
+
+        $album->users()->sync(
+            $collaborator->id, false
+        );
+
+        return (new AlbumResource($album))->additional(['message' => "Les collaborateurs ont été ajoutés"]);
     }
 
     public function delete($id)
