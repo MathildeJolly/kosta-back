@@ -22,12 +22,7 @@ class AlbumResource extends JsonResource
             'slug' => $this->slug,
             'users' => UserResource::collection($this->whenLoaded('users')),
             'sort' => $this->sortFile(),
-            'medias' => $this->medias->map(function (Media $media) {
-                    return [
-                        $media->collection_name => asset('/medias/'. $media->id . '/'. $media->file_name),
-                        'date' =>Carbon::now(),
-                    ];
-                })->toArray(),
+            'medias' => $this->getMediaOrdered(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

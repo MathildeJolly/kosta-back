@@ -36,6 +36,8 @@ class AlbumController extends Controller
     public function show($slug)
     {
         $album = $this->albumRepository->findBySlug($slug)->first();
+
+
         if (!$album) {
             return $this->returnJsonErreur('Aucun album');
         }
@@ -43,39 +45,91 @@ class AlbumController extends Controller
         return new AlbumResource($album);
     }
 
+    public function updateOrder(Request $request, $slug, $chunk)
+    {
+        $album = Album::where('slug', $slug)->firstOrFail();
+
+        $medias = DB::table('media')->where('model_id', $album->id)->where('chunk_id', $chunk)->get();
+        if ($request->has('order')) {
+            collect($request->get('order'))->each(function ($item) use ($medias) {
+                $media = $medias->first(function ($e) use ($item) {
+                    return $e->id === $item['id'];
+                });
+                DB::table('media')->where('id', $media->id)->update([
+                    'order' => $item['place']
+                ]);
+            });
+        }
+
+        return new AlbumResource($album);
+
+    }
+
+    public function updateChunkOrder(Request $request, $slug)
+    {
+        $album = Album::where('slug', $slug)->firstOrFail();
+
+        if ($request->has('order')) {
+            collect($request->get('order'))->each(function ($item){
+                DB::table('media')->where('chunk_id', $item['id'])->update([
+                    'chunk_order' => $item['place']
+                ]);
+            });
+        }
+
+        return new AlbumResource($album);
+
+    }
+
     public function storeFileForAlbum(Request $request, $id)
     {
         $album = $this->albumRepository->find($id);
-
+        $media = $album->medias;
+        $chunk = $media->isNotEmpty() ? $media->groupBy('chunk_id')->count() : 0;
         if ($request->photos) {
             $album->addMultipleMediaFromRequest(['photos'])
-                ->each(function ($fileAdder, $index) use ($request) {
+                ->each(function ($fileAdder, $index) use ($request, $chunk) {
                     $res = $fileAdder->toMediaCollection('photo');
                     $exif = Image::make(public_path() . '/medias/' . $res->id . '/' . $res->file_name)->exif();
                     if (isset($exif['FileDateTime'])) {
                         $date = Carbon::parse($exif['FileDateTime'])->format('Y-m-d H:i:s');
                         DB::table('media')->where('id', $res->id)->update([
                             'media_date' => $date,
+                            //'order'       => $index + 1,
+                            //'chunk_order' => $chunk
                         ]);
                     }
                 }
                 );
         }
-
-        collect($album->medias)->groupBy('media_date')->each(function ($iem) {
+        $album = Album::find($id);
+        collect($album->medias)->groupBy('media_date')->each(function ($iem, $index) {
             $uuid = $iem->filter(function ($item) {
                 return $item->chunk_id;
-            })->first()->chunk_id;
-            if (!$uuid) {
-                $uuid = Uuid::generate()->string;
-            }
-            $iem->each(function ($item) use ($uuid) {
+            })->first();
+
+            $uuid = !$uuid ? Uuid::generate()->string : $uuid->chunk_id;
+
+            $iem->each(function ($item, $index) use ($uuid) {
                 DB::table('media')->where('id', $item->id)->update([
                     'chunk_id' => $uuid,
                 ]);
             });
+        });
+        collect(Album::find($id)->medias)->groupBy('chunk_id')->values()->each(function ($chunk, $chunkIndex) {
+            $chunk->each(function ($item, $index) use ($chunkIndex) {
+                if (!$item->order) {
+                    $item->order = $index + 1;
+                    $item->save();
+                }
+                if (!$item->chunck_order) {
+                    $item->chunk_order = $chunkIndex;
+                    $item->save();
+                }
+            });
 
         });
+
 
         return (new AlbumResource($album))->additional(['message' => "Image ajouté"]);
     }

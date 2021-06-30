@@ -15,9 +15,11 @@ class Album extends Model implements HasMedia
 {
     use InteractsWithMedia;
     use HasSlug;
+
     // Remplir le Fillable avec les différents nom de colonnes de la DB ex : 'name'
 
     protected $fillable = ['name', 'slug'];
+
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
@@ -30,21 +32,41 @@ class Album extends Model implements HasMedia
 
     public function sortFile()
     {
-        return collect($this->medias)->groupBy('media_date')->filter(function ($item, $index){
+        return collect($this->medias)->groupBy('media_date')->filter(function ($item, $index) {
             return $index;
-        })->map(function($op){
-            return $op->map(function($media){
+        })->map(function ($op) {
+            return $op->map(function ($media) {
                 return [
-                    $media->collection_name => asset('/medias/'. $media->id . '/'. $media->file_name),
+                    $media->collection_name => asset('/medias/' . $media->id . '/' . $media->file_name),
                 ];
             });
 
         });
 
     }
+
     public function getRouteKeyName()
     {
         return 'slug';
+    }
+
+
+    public function getMediaOrdered()
+    {
+        //$this->medias->map(function (Media $media) {
+        //    return [
+        //        $media->collection_name => asset('/medias/'. $media->id . '/'. $media->file_name),
+        //        'date' =>Carbon::now(),
+        //    ];
+        //})->toArray()
+        $col = collect();
+        $chunk = $this->medias->sortBy('chunk_order')->groupBy('chunk_id');
+        $chunk->map(function ($item) {
+            return $item->sortBy('order')->values();
+        })->each(function ($item, $index) use ($col) {
+            $col->put($item->first()->media_date, $item);
+        });
+        return $col;
     }
 
     public function users()

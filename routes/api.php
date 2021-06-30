@@ -34,6 +34,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('album', [AlbumController::class, "store"]);
     Route::get('album/{slug}', [AlbumController::class, "show"]);
+    Route::put('album/{slug}/chunk', [AlbumController::class, "updateChunkOrder"]);
+    Route::put('album/{slug}/chunk/{chunk}', [AlbumController::class, "updateOrder"]);
+
     Route::post('album/{id}/file', [AlbumController::class, "storeFileForAlbum"]);
     Route::post('album/{id}/collaborator', [AlbumController::class, "collaborators"]);
 

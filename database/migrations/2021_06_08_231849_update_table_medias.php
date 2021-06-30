@@ -15,7 +15,7 @@ class UpdateTableMedias extends Migration
     {
         Schema::table('media',function (Blueprint  $table){
            $table->date('media_date')->nullable();
-            $table->string('chunk_id')->nullable();
+            $table->longText('chunk_id')->nullable();
             $table->bigInteger('chunk_order')->nullable();
             $table->bigInteger('order')->nullable();
         });
