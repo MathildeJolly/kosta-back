@@ -122,9 +122,29 @@ class AlbumController extends Controller
 
     }
 
+    public function updateOrderOfFile(Request $request, $slug, $chunk, $id)
+    {
+        $album = $this->albumRepository->findBySlug($slug)->first();
+        if (!$album) {
+            $this->returnJsonErreur('Aucun album trouvée');
+        }
+        $place = DB::table('media')->where('chunk_id', $chunk)->get()->sortBy('order')->last();
+        DB::table('media')->where('id', $id)->update([
+            'chunk_id'   => $chunk,
+            'media_date' => $place->media_date,
+            'order'      => $place->order + 1,
+        ]);
+
+        $album = $this->albumRepository->findBySlug($slug)->first();
+
+
+        return new AlbumResource($album);
+
+    }
+
     public function updateChunkOrder(Request $request, $slug)
     {
-        $album = Album::where('slug', $slug)->firstOrFail();
+        $album = $this->albumRepository->findBySlug($slug)->first();
 
         if ($request->has('order')) {
             collect($request->get('order'))->each(function ($item) {
@@ -140,7 +160,7 @@ class AlbumController extends Controller
 
     public function storeFileForAlbum(Request $request, $slug)
     {
-        $album = $this->albumRepository->findBySlug($slug);
+        $album = $this->albumRepository->findBySlug($slug)->first();
         $media = $album->medias;
         $chunk = $media->isNotEmpty() ? $media->groupBy('chunk_id')->count() : 0;
         if ($request->photos) {
@@ -159,7 +179,7 @@ class AlbumController extends Controller
                 }
                 );
         }
-        $album = Album::find($id);
+        $album = Album::where('slug', $slug)->first();
         collect($album->medias)->groupBy('media_date')->each(function ($iem, $index) {
             $uuid = $iem->filter(function ($item) {
                 return $item->chunk_id;
@@ -173,7 +193,7 @@ class AlbumController extends Controller
                 ]);
             });
         });
-        collect(Album::find($id)->medias)->groupBy('chunk_id')->values()->each(function ($chunk, $chunkIndex) {
+        collect(Album::where('slug', $slug)->first()->medias)->groupBy('chunk_id')->values()->each(function ($chunk, $chunkIndex) {
             $chunk->each(function ($item, $index) use ($chunkIndex) {
                 if (!$item->order) {
                     $item->order = $index + 1;
@@ -189,6 +209,38 @@ class AlbumController extends Controller
 
 
         return (new AlbumResource($album))->additional(['message' => "Image ajouté"]);
+    }
+
+    public function storeFileForAlbumWithChunk(Request $request, $slug)
+    {
+
+        $album = $this->albumRepository->findBySlug($slug)->first();
+        $media = $album->medias;
+        $chunk = $request->get('name');
+        $uuid = Uuid::generate()->string;
+        $last = DB::table('media')->where('model_id', $album->id)->get()->sortBy('chunk_order')->last()->chunk_order + 1;
+        if ($request->photos) {
+            $album->addMultipleMediaFromRequest(['photos'])
+                ->each(function ($fileAdder, $index) use ($request, $chunk, $uuid, $last) {
+                    $res = $fileAdder->toMediaCollection('photo');
+                    $exif = Image::make(public_path() . '/medias/' . $res->id . '/' . $res->file_name)->exif();
+                    if (isset($exif['FileDateTime'])) {
+                        $date = Carbon::parse($exif['FileDateTime'])->format('Y-m-d H:i:s');
+                        DB::table('media')->where('id', $res->id)->update([
+                            'media_date'  => $chunk,
+                            'chunk_id'    => $uuid,
+                            'chunk_order' => $last,
+                            'order'       => $index + 1,
+                            //'chunk_order' => $chunk
+                        ]);
+                    }
+                }
+                );
+        }
+        $album = Album::where('slug', $slug)->first();
+
+
+        return (new AlbumResource($album))->additional(['message' => "Chunk crée"]);
     }
 
     public function store(Request $request)
