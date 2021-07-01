@@ -20,9 +20,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/mail/test', function () {
     try {
-    Mail::to('glrd.remi@gmail.com')->send(new \App\Mail\TestMail());
+        Mail::to('glrd.remi@gmail.com')->send(new \App\Mail\TestMail());
 
-    }catch (\Exception $e){
+    } catch (\Exception $e) {
         dd($e);
     }
 });
@@ -44,11 +44,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('album', [AlbumController::class, "store"]);
     Route::get('album/{slug}', [AlbumController::class, "show"]);
+
     Route::put('album/{slug}/chunk', [AlbumController::class, "updateChunkOrder"]);
     Route::put('album/{slug}/chunk/{chunk}', [AlbumController::class, "updateOrder"]);
-Route::post('album/{slug}/invite/{id}', [AlbumController::class, 'inviteCollaborateur']);
-    Route::post('album/{id}/file', [AlbumController::class, "storeFileForAlbum"]);
-    Route::post('album/{id}/collaborator', [AlbumController::class, "collaborators"]);
+    Route::post('album/{slug}/invite/{id}', [AlbumController::class, 'inviteCollaborateur']);
+    Route::post('album/{slug}/file', [AlbumController::class, "storeFileForAlbum"]);
+    Route::post('album/{slug}/chunk', [AlbumController::class, "updateChunkOrder"]);
+    Route::post('album/{slug}/collaborator', [AlbumController::class, "collaborators"]);
 
     Route::get('albums', [AlbumController::class, "all"]);
 });

@@ -138,9 +138,9 @@ class AlbumController extends Controller
 
     }
 
-    public function storeFileForAlbum(Request $request, $id)
+    public function storeFileForAlbum(Request $request, $slug)
     {
-        $album = $this->albumRepository->find($id);
+        $album = $this->albumRepository->findBySlug($slug);
         $media = $album->medias;
         $chunk = $media->isNotEmpty() ? $media->groupBy('chunk_id')->count() : 0;
         if ($request->photos) {
@@ -214,9 +214,9 @@ class AlbumController extends Controller
         return (new AlbumResource($album))->additional(['message' => "L'album a bien été créé"]);
     }
 
-    public function collaborators(Request $request, $id)
+    public function collaborators(Request $request, $slug)
     {
-        $album = $this->albumRepository->find($id)->first();
+        $album = $this->albumRepository->findBySlug($slug)->first();
         if (!$album) {
             return $this->returnJsonErreur('Aucun album');
         }
