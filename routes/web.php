@@ -16,3 +16,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/album/join/{hash}', [\App\Http\Controllers\AlbumController::class, 'join']);
+Route::get('/album/decline/{hash}', [\App\Http\Controllers\AlbumController::class, 'decline']);

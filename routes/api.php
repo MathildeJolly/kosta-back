@@ -3,6 +3,7 @@
 use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,6 +17,15 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
+Route::get('/mail/test', function () {
+    try {
+    Mail::to('glrd.remi@gmail.com')->send(new \App\Mail\TestMail());
+
+    }catch (\Exception $e){
+        dd($e);
+    }
+});
 Route::post('/tokens/create', function (Request $request) {
     $token = $request->user()->createToken($request->token_name);
 
@@ -36,7 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('album/{slug}', [AlbumController::class, "show"]);
     Route::put('album/{slug}/chunk', [AlbumController::class, "updateChunkOrder"]);
     Route::put('album/{slug}/chunk/{chunk}', [AlbumController::class, "updateOrder"]);
-
+Route::post('album/{slug}/invite/{id}', [AlbumController::class, 'inviteCollaborateur']);
     Route::post('album/{id}/file', [AlbumController::class, "storeFileForAlbum"]);
     Route::post('album/{id}/collaborator', [AlbumController::class, "collaborators"]);
 

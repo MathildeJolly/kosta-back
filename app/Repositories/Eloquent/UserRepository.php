@@ -17,6 +17,8 @@ class UserRepository implements BaseRepository {
     public function find($id)
     {
         // TODO: Implement find() method.
+        return $this->model->where('id', $id)->first();
+
     }
 
     public function findByEmail($email)

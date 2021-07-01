@@ -3,12 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\AlbumResource;
+use App\Mail\InviteToAlbum;
 use App\Models\Album;
+use App\Models\Invitation;
 use App\Repositories\Eloquent\AlbumRepository;
 use App\Repositories\Eloquent\UserRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Image;
 use Spatie\MediaLibrary\MediaCollections\FileAdder;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -31,6 +36,58 @@ class AlbumController extends Controller
     {
         // return $this->albumRepository->getUserAlbums();
         return AlbumResource::collection($this->albumRepository->getUserAlbums());
+    }
+
+    public function decline(Request $request, $hash)
+    {
+        $invitation = Invitation::where('hash', $hash)->first();
+        if ($invitation && $invitation->status === Invitation::WAITING) {
+            $invitation->status = Invitation::DECLINE;
+            $invitation->save();
+        }
+
+        return redirect('/')->with('success', "Vous n'avez pas rejoins l'album");
+    }
+
+    public function join(Request $request, $hash)
+    {
+        $invitation = Invitation::where('hash', $hash)->first();
+        if ($invitation && $invitation->status === Invitation::WAITING) {
+            $album = $this->albumRepository->find($invitation->fk_album_id)->first();
+            $album->users()->attach([$invitation->fk_receiver_id]);
+            $album->save();
+
+            $invitation->status = Invitation::ACCEPTED;
+            $invitation->save();
+        }
+
+
+        return redirect('/')->with('success', "Vous avez rejoins l'album");
+    }
+
+    public function inviteCollaborateur($slug, $id)
+    {
+        $album = $this->albumRepository->findBySlug($slug)->first();
+
+        $user = $this->userRepository->find($id);
+        $already = Invitation::where('fk_receiver_id', $user->id)->where('fk_album_id', $album->id)->where('fk_sender_id', auth()->user()->id)->first();
+        if ($already) {
+            return $this->returnJsonErreur('Une invitation à déjà été envoyé');
+        }
+        $invitation = new Invitation();
+        $invitation->fk_sender_id = auth()->user()->id;
+        $invitation->fk_receiver_id = $user->id;
+        $invitation->fk_album_id = $album->id;
+        $invitation->hash = $this->unique_random((new Invitation())->getTable(), 'hash', 32);
+        $invitation->save();
+        try {
+            Mail::to($user->email)->send(new InviteToAlbum($invitation));
+        } catch (\Exception $e) {
+            return $this->returnJsonErreur("Erreur dans l'envoie du mail");
+        }
+
+        return response()->json(['message' => "Le mail a bien été envoyé"]);
+
     }
 
     public function show($slug)
@@ -70,7 +127,7 @@ class AlbumController extends Controller
         $album = Album::where('slug', $slug)->firstOrFail();
 
         if ($request->has('order')) {
-            collect($request->get('order'))->each(function ($item){
+            collect($request->get('order'))->each(function ($item) {
                 DB::table('media')->where('chunk_id', $item['id'])->update([
                     'chunk_order' => $item['place']
                 ]);
