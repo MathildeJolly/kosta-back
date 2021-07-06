@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Intervention\Image\Image;
+use Image;
 use Spatie\MediaLibrary\MediaCollections\FileAdder;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Webpatser\Uuid\Uuid;
@@ -176,16 +176,17 @@ class AlbumController extends Controller
         $chunk = $media->isNotEmpty() ? $media->groupBy('chunk_id')->count() : 0;
 
         if ($request->file('file')) {
+            $exif = Image::make($request->file('file'))->exif();
             $fileAdder = $album->addMediaFromRequest('file');
             $res = $fileAdder->toMediaCollection('photo');
-            $time = exif_read_data(public_path() . '/media/' . $res->id . '/' . $res->file_name, 0, true)['FILE']['FileDateTime'];
-            dd($time);
-            $date = Carbon::createFromTimestamp($time)->format('Y-m-d H:i:s');
-            DB::table('media')->where('id', $res->id)->update([
-                'media_date' => $date,
-                //'order'       => $index + 1,
-                //'chunk_order' => $chunk
-            ]);
+            if ($exif['DateTimeOriginal']) {
+                $date = Carbon::parse($exif['DateTimeOriginal'])->format('Y-m-d H:i:s');
+                DB::table('media')->where('id', $res->id)->update([
+                    'media_date' => $date,
+                    //'order'       => $index + 1,
+                    //'chunk_order' => $chunk
+                ]);
+            }
         }
 
         $album = Album::where('slug', $slug)->first();
@@ -228,23 +229,18 @@ class AlbumController extends Controller
         $chunk = $request->get('name');
         $uuid = Uuid::generate()->string;
         $last = DB::table('media')->where('model_id', $album->id)->get()->sortBy('chunk_order')->last()->chunk_order + 1;
-        if ($request->photos) {
-            $album->addMultipleMediaFromRequest(['photos'])
-                ->each(function ($fileAdder, $index) use ($request, $chunk, $uuid, $last) {
-                    $res = $fileAdder->toMediaCollection('photo');
-                    $exif = Image::make(public_path() . '/medias/' . $res->id . '/' . $res->file_name)->exif();
-                    if (isset($exif['FileDateTime'])) {
-                        $date = Carbon::parse($exif['FileDateTime'])->format('Y-m-d H:i:s');
-                        DB::table('media')->where('id', $res->id)->update([
-                            'media_date'  => $chunk,
-                            'chunk_id'    => $uuid,
-                            'chunk_order' => $last,
-                            'order'       => $index + 1,
-                            //'chunk_order' => $chunk
-                        ]);
-                    }
-                }
-                );
+        if ($request->file('file')) {
+            $exif = Image::make($request->file('file'))->exif();
+            $fileAdder = $album->addMediaFromRequest('file');
+            $res = $fileAdder->toMediaCollection('photo');
+            if ($exif['DateTimeOriginal']) {
+                $date = Carbon::parse($exif['DateTimeOriginal'])->format('Y-m-d H:i:s');
+                DB::table('media')->where('id', $res->id)->update([
+                    'media_date' => $date,
+                    //'order'       => $index + 1,
+                    //'chunk_order' => $chunk
+                ]);
+            }
         }
         $album = Album::where('slug', $slug)->first();
 
