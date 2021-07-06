@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Intervention\Image\Image;
 use Intervention\Image\Facades\Image;
 use Spatie\MediaLibrary\MediaCollections\FileAdder;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -175,15 +176,13 @@ class AlbumController extends Controller
         if ($request->file('file')) {
             $fileAdder = $album->addMediaFromRequest('file');
             $res = $fileAdder->toMediaCollection('photo');
-            $exif = Image::make(public_path() . '/media/' . $res->id . '/' . $res->file_name)->exif();
-            if (isset($exif['FileDateTime'])) {
-                $date = Carbon::parse($exif['FileDateTime'])->format('Y-m-d H:i:s');
-                DB::table('media')->where('id', $res->id)->update([
-                    'media_date' => $date,
-                    //'order'       => $index + 1,
-                    //'chunk_order' => $chunk
-                ]);
-            }
+            $time = exif_read_data(public_path() . '/medias/' . $res->id . '/' . $res->file_name, 0, true)['FILE']['FileDateTime'];
+            $date = Carbon::createFromTimestamp($time)->format('Y-m-d H:i:s');
+            DB::table('media')->where('id', $res->id)->update([
+                'media_date' => $date,
+                //'order'       => $index + 1,
+                //'chunk_order' => $chunk
+            ]);
         }
 
         $album = Album::where('slug', $slug)->first();
