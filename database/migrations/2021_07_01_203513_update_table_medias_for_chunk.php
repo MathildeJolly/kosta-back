@@ -16,6 +16,10 @@ class UpdateTableMediasForChunk extends Migration
         Schema::table('media', function (Blueprint  $table){
            $table->string('media_date')->change();
         });
+
+        Schema::table('cms_invitations', function (Blueprint  $table){
+            $table->string('fk_receiver_id')->nullable()->change();
+        });
     }
 
     /**
@@ -25,8 +29,8 @@ class UpdateTableMediasForChunk extends Migration
      */
     public function down()
     {
-        Schema::table('media', function (Blueprint  $table){
-            $table->date('media_date')->change();
-        });
+        //Schema::table('media', function (Blueprint  $table){
+        //    $table->date('media_date')->change();
+        //});
     }
 }

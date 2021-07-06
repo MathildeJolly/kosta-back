@@ -68,23 +68,30 @@ class AlbumController extends Controller
     public function inviteCollaborateur(Request $request, $slug)
     {
         $album = $this->albumRepository->findBySlug($slug)->first();
+        foreach ($request->get('email') as $user) {
+            $userModel = $this->userRepository->findByEmail($user['email'])->first();
+            if (!$userModel) {
+                $this->sendMailForCreateUser($user['email'], $album);
 
-        $user = $this->userRepository->findByEmail($request->email)->first();
-        $already = Invitation::where('fk_receiver_id', $user->id)->where('fk_album_id', $album->id)->where('fk_sender_id', auth()->user()->id)->first();
+                return response()->json(['message' => "Le mail de création d'un utilisateur à bien été envoyé"]);
 
-        if ($already) {
-            return $this->returnJsonErreur('Une invitation à déjà été envoyé');
-        }
-        $invitation = new Invitation();
-        $invitation->fk_sender_id = auth()->user()->id;
-        $invitation->fk_receiver_id = $user->id;
-        $invitation->fk_album_id = $album->id;
-        $invitation->hash = $this->unique_random((new Invitation())->getTable(), 'hash', 32);
-        $invitation->save();
-        try {
-            Mail::to($user->email)->send(new InviteToAlbum($invitation));
-        } catch (\Exception $e) {
-            return $this->returnJsonErreur("Erreur dans l'envoie du mail");
+            }
+            $already = Invitation::where('fk_receiver_id', $userModel->id)->where('fk_album_id', $album->id)->where('fk_sender_id', auth()->user()->id)->first();
+
+            if ($already) {
+                return $this->returnJsonErreur('Une invitation à déjà été envoyé');
+            }
+            $invitation = new Invitation();
+            $invitation->fk_sender_id = auth()->user()->id;
+            $invitation->fk_receiver_id = $userModel->id;
+            $invitation->fk_album_id = $album->id;
+            $invitation->hash = $this->unique_random((new Invitation())->getTable(), 'hash', 32);
+            $invitation->save();
+            try {
+                Mail::to($userModel->email)->send(new InviteToAlbum($invitation));
+            } catch (\Exception $e) {
+                return $this->returnJsonErreur("Erreur dans l'envoie du mail");
+            }
         }
 
         return response()->json(['message' => "Le mail a bien été envoyé"]);

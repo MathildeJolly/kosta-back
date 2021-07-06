@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Album;
+use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Resources\UserResource;
@@ -40,10 +42,23 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $name     = $request->name;
-        $email    = $request->email;
+        $name = $request->name;
+        $email = $request->email;
         $password = $request->password;
-        $user     = User::create(['name' => $name, 'email' => $email, 'password' => Hash::make($password)]);
+        User::create(['name' => $name, 'email' => $email, 'password' => Hash::make($password)]);
+        $user = User::where('email', $request->get('email'))->first();
+        if ($request->has('hash')) {
+            $invite = Invitation::where('hash', $request->get('hash'))->first();
+            if ($invite->status === Invitation::WAITING) {
+                $invite->status = Invitation::ACCEPTED;
+                $invite->fk_receiver_id = $user->id;
+                $invite->save();
+
+                $album = Album::where('id', $invite->fk_album_id)->first();
+                $album->users()->attach([$user->id]);
+                $album->save();
+            }
+        }
 
         return new UserResource($user);
     }
@@ -83,7 +98,7 @@ class AuthController extends Controller
 
         User::whereId($userId)->update(['password' => Hash::make($request->password)]);
 
-         return response()->json([
+        return response()->json([
             'message' => 'Votre mot de passe a bien été modifié !'
         ], 200);
     }

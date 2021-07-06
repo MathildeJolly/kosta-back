@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\CreateUserMail;
+use App\Mail\InviteToAlbum;
+use App\Models\Invitation;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class Controller extends BaseController
@@ -18,6 +22,21 @@ class Controller extends BaseController
         return response()->json([
             'message' => $message
         ], $code);
+    }
+
+
+    public function sendMailForCreateUser($email, $album)
+    {
+        $invitation = new Invitation();
+        $invitation->fk_sender_id = auth()->user()->id;
+        $invitation->fk_receiver_id = null;
+        $invitation->fk_album_id = $album->id;
+        $invitation->hash = $this->unique_random((new Invitation())->getTable(), 'hash', 32);
+        $invitation->save();
+
+        Mail::to($email)->send(new CreateUserMail($email, $invitation));
+
+
     }
 
     public function unique_random(string $table, string $col, int $chars = 16): string
