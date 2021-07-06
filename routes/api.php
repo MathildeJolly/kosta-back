@@ -48,7 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('album/{slug}/chunk', [AlbumController::class, "updateChunkOrder"]);
     Route::put('album/{slug}/chunk/{chunk}', [AlbumController::class, "updateOrder"]);
     Route::put('album/{slug}/chunk/{chunk}/file/{id}', [AlbumController::class, "updateOrderOfFile"]);
-    Route::post('album/{slug}/invite/{id}', [AlbumController::class, 'inviteCollaborateur']);
+    Route::post('album/{slug}/invite', [AlbumController::class, 'inviteCollaborateur']);
     Route::post('album/{slug}/file', [AlbumController::class, "storeFileForAlbum"]);
     Route::post('album/{slug}/file/chunk', [AlbumController::class, "storeFileForAlbumWithChunk"]);
     Route::post('album/{slug}/collaborator', [AlbumController::class, "collaborators"]);

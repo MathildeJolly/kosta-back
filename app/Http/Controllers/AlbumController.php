@@ -65,12 +65,13 @@ class AlbumController extends Controller
         return redirect('/')->with('success', "Vous avez rejoins l'album");
     }
 
-    public function inviteCollaborateur($slug, $id)
+    public function inviteCollaborateur(Request $request, $slug)
     {
         $album = $this->albumRepository->findBySlug($slug)->first();
 
-        $user = $this->userRepository->find($id);
+        $user = $this->userRepository->findByEmail($request->email)->first();
         $already = Invitation::where('fk_receiver_id', $user->id)->where('fk_album_id', $album->id)->where('fk_sender_id', auth()->user()->id)->first();
+
         if ($already) {
             return $this->returnJsonErreur('Une invitation à déjà été envoyé');
         }

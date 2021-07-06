@@ -69,7 +69,7 @@ class AuthController extends Controller
         User::whereId($userId)->update($request->toArray());
 
         return response()->json([
-            'message' => 'Successfully updated'
+            'message' => 'Votre nom a bien été modifié !'
         ], 200);
     }
 
@@ -84,7 +84,7 @@ class AuthController extends Controller
         User::whereId($userId)->update(['password' => Hash::make($request->password)]);
 
          return response()->json([
-            'message' => 'Successfully updated'
+            'message' => 'Votre mot de passe a bien été modifié !'
         ], 200);
     }
 
