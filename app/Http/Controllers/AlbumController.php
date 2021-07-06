@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Image;
+use Intervention\Image\Facades\Image;
 use Spatie\MediaLibrary\MediaCollections\FileAdder;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Webpatser\Uuid\Uuid;
@@ -171,22 +171,21 @@ class AlbumController extends Controller
         $album = $this->albumRepository->findBySlug($slug)->first();
         $media = $album->medias;
         $chunk = $media->isNotEmpty() ? $media->groupBy('chunk_id')->count() : 0;
-        if ($request->photos) {
-            $album->addMultipleMediaFromRequest(['photos'])
-                ->each(function ($fileAdder, $index) use ($request, $chunk) {
-                    $res = $fileAdder->toMediaCollection('photo');
-                    $exif = Image::make(public_path() . '/medias/' . $res->id . '/' . $res->file_name)->exif();
-                    if (isset($exif['FileDateTime'])) {
-                        $date = Carbon::parse($exif['FileDateTime'])->format('Y-m-d H:i:s');
-                        DB::table('media')->where('id', $res->id)->update([
-                            'media_date' => $date,
-                            //'order'       => $index + 1,
-                            //'chunk_order' => $chunk
-                        ]);
-                    }
-                }
-                );
+
+        if ($request->file('file')) {
+            $fileAdder = $album->addMediaFromRequest('file');
+            $res = $fileAdder->toMediaCollection('photo');
+            $exif = Image::make(public_path() . '/media/' . $res->id . '/' . $res->file_name)->exif();
+            if (isset($exif['FileDateTime'])) {
+                $date = Carbon::parse($exif['FileDateTime'])->format('Y-m-d H:i:s');
+                DB::table('media')->where('id', $res->id)->update([
+                    'media_date' => $date,
+                    //'order'       => $index + 1,
+                    //'chunk_order' => $chunk
+                ]);
+            }
         }
+
         $album = Album::where('slug', $slug)->first();
         collect($album->medias)->groupBy('media_date')->each(function ($iem, $index) {
             $uuid = $iem->filter(function ($item) {
