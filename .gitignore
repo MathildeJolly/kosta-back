@@ -15,3 +15,4 @@ yarn-error.log
 .idea
 /public/medias/*
 /public/media/*
+/data/*

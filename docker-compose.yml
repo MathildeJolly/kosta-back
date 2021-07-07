@@ -1,0 +1,53 @@
+version: '3.5'
+
+services:
+
+
+  # production
+  php-kosta:
+    image: kosta/php
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: php-kosta
+    command: bash -c 'php artisan key:generate --force && php artisan migrate --force && chmod -R 777 /var/kosta/public/ && nginx && php-fpm'
+    ports:
+      - 82:80
+    volumes:
+      - ./:/var/kosta
+    environment:
+      - APP_ENV=production
+      - APP_DEV=false
+      - DB_HOST=kosta_mysql
+      - DB_PORT=3306
+      - DB_DATABASE=kosta
+      - DB_USERNAME=kosta
+      - DB_PASSWORD=kosta
+      - MAIL_DRIVER=smtp
+      - MAIL_HOST=smtp.gmail.com
+      - MAIL_PORT=587
+      - MAIL_USERNAME=noreply.kosta@gmail.com
+      - MAIL_PASSWORD=Kosta1234
+      - MAIL_ENCRYPTION=tls
+      - APP_DEBUG=false
+
+  kosta_mysql:
+    image: "mysql:5.7.27"
+    container_name: kosta_mysql
+    ports:
+      - "3309:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=kosta
+      - MYSQL_DATABASE=kosta
+      - MYSQL_USER=kosta
+      - MYSQL_PASSWORD=kosta
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+
+  kosta_adminer:
+    container_name: kosta_adminer
+    image: adminer:4.6.3-standalone
+    ports:
+      - 8090:8080
+    depends_on:
+      - kosta_mysql

@@ -64,7 +64,10 @@ class Album extends Model implements HasMedia
         $chunk->map(function ($item) {
             return $item->sortBy('order')->values();
         })->each(function ($item, $index) use ($col) {
-            $col->put($item->first()->media_date, $item);
+            $array = $item->map(function($sub){
+                return ['url' =>str_replace('storage', 'media', $sub->getFullUrl())];
+            });
+            $col->put($item->first()->media_date, $array);
         });
         return $col;
     }
