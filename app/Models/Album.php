@@ -68,9 +68,12 @@ class Album extends Model implements HasMedia
                 //TEMPROY PATCH
                 return ['date' => $sub->media_date, 'url' =>str_replace("localhost", "127.0.0.1:8000",str_replace('storage', 'media', $sub->getFullUrl()))];
             });
-            $col->put($item->first()->media_date, $array);
+            $date = $item->first()->media_date;
+            $col->push(['titre' =>$date, 'photos' => $array]);
         });
-        return $col;
+
+
+        return $col->values()->toArray();
     }
 
     public function users()
