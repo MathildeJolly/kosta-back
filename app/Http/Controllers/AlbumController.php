@@ -179,7 +179,7 @@ class AlbumController extends Controller
             $exif = Image::make($request->file('file'))->exif();
             $fileAdder = $album->addMediaFromRequest('file');
             $res = $fileAdder->toMediaCollection('photo');
-            if ($exif['DateTimeOriginal']) {
+            if (isset($exif['DateTimeOriginal'])) {
                 $date = Carbon::parse($exif['DateTimeOriginal'])->format('Y-m-d H:i:s');
                 DB::table('media')->where('id', $res->id)->update([
                     'media_date' => $date,
