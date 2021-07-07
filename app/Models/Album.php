@@ -65,7 +65,7 @@ class Album extends Model implements HasMedia
             return $item->sortBy('order')->values();
         })->each(function ($item, $index) use ($col) {
             $array = $item->map(function($sub){
-                return ['url' =>str_replace('storage', 'media', $sub->getFullUrl())];
+                return ['date' => $sub->media_date, 'url' =>str_replace('storage', 'media', $sub->getFullUrl())];
             });
             $col->put($item->first()->media_date, $array);
         });
