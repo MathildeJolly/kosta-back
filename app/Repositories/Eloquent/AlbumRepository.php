@@ -50,16 +50,6 @@ class AlbumRepository implements BaseRepository {
 
     public function getUserAlbums()
     {
-        // foreach (auth()->user()->albums as $album) {
-        //     $medias = $album->getMedia('media');
-        //     foreach ($medias as $media) {
-        //         $mediasUrl[] = $media->getUrl();
-        //     }
-        //     dd($album);
-        //     $albums[] = [$album, $mediasUrl];
-        // }
-
-        // return $albums;
         return auth()->user()->albums;
     }
 }

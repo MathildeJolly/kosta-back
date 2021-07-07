@@ -34,7 +34,6 @@ class AlbumController extends Controller
      */
     public function all()
     {
-        // return $this->albumRepository->getUserAlbums();
         return AlbumResource::collection($this->albumRepository->getUserAlbums());
     }
 
