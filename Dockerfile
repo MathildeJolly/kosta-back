@@ -65,6 +65,9 @@ RUN chmod -R 775 /var/kosta/storage/
 
 COPY ./nginx-dev.conf /etc/nginx/conf.d/
 
+COPY ./php-fpm.conf /usr/local/etc/php-fpm.d/
+
+COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 
 RUN rm -rf /etc/nginx/sites-enabled/
 
