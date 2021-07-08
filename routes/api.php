@@ -53,7 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('album/{slug}/file/chunk', [AlbumController::class, "storeFileForAlbumWithChunk"]);
     Route::post('album/{slug}/collaborator', [AlbumController::class, "collaborators"]);
 
-    Route::post('/album/delete/{id}', [AlbumController::class, 'delete']);
+    Route::delete('/album/delete/{id}', [AlbumController::class, 'delete']);
     Route::get('albums', [AlbumController::class, "all"]);
 });
 

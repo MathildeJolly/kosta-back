@@ -20,6 +20,7 @@ class AlbumResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
+            'description' => $this->description,
             'users' => UserResource::collection($this->whenLoaded('users')),
             'sort' => $this->sortFile(),
             'medias' => $this->getMediaOrdered(),
