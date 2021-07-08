@@ -8,6 +8,24 @@ libjpeg62-turbo-dev libpng-dev libxpm-dev libfreetype6-dev nano htop && pecl ins
 RUN apt-get install -y libzip-dev zip
 RUN apt-get update && apt-get install -y zlib1g-dev libicu-dev g++
 
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    curl \
+    libssl-dev \
+    zlib1g-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libonig-dev \
+    libxml2-dev \
+    libicu-dev \
+    zip \
+    unzip \
+    libzip-dev \
+    -y mariadb-client
+
 RUN docker-php-ext-install exif
 RUN docker-php-ext-enable exif
 
@@ -18,8 +36,12 @@ RUN docker-php-ext-configure zip
 RUN docker-php-ext-install zip
 
 
-RUN docker-php-ext-configure gd
-RUN docker-php-ext-install gd
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+
+RUN docker-php-ext-install -j$(nproc) gd
+
+RUN apt update && apt install -y libc-client-dev libkrb5-dev && rm -r /var/lib/apt/lists/*
+
 
 RUN ln -s /usr/include/x86_64-linux-gnu/gmp.h /usr/local/include/
 RUN docker-php-ext-configure opcache --enable-opcache \
