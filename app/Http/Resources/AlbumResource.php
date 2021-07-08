@@ -26,7 +26,7 @@ class AlbumResource extends JsonResource
             'medias' => $this->getMediaOrdered(),
             'cover' => !$this->medias->isEmpty() ? str_replace('storage', 'media', $this->medias->first()->getFullUrl()) : [],
             'preview' => $this->medias->map(function($media) {
-                return str_replace('storage', 'media', $media->getFullUrl());
+                return str_replace("https","http", str_replace('storage', 'media', $media->getFullUrl()));
             })->skip(1)->take(4),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
