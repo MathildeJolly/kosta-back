@@ -24,7 +24,7 @@ class AlbumResource extends JsonResource
             'users' => UserResource::collection($this->whenLoaded('users')),
             'sort' => $this->sortFile(),
             'medias' => $this->getMediaOrdered(),
-            'cover' => !$this->medias->isEmpty() ? str_replace("http", 'http',str_replace('storage', 'media', $this->medias->first()->getFullUrl())) : [],
+            'cover' => !$this->medias->isEmpty() ? str_replace("https", 'http',str_replace('storage', 'media', $this->medias->first()->getFullUrl())) : [],
             'preview' => $this->medias->map(function($media) {
                 return str_replace("https","http", str_replace('storage', 'media', $media->getFullUrl()));
             })->skip(1)->take(4),
