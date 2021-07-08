@@ -35,10 +35,17 @@ RUN docker-php-ext-install intl
 RUN docker-php-ext-configure zip
 RUN docker-php-ext-install zip
 
+RUN apt-get update && apt-get install -y \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd
 
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 
-RUN docker-php-ext-install -j$(nproc) gd
+#RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+
+#RUN docker-php-ext-install -j$(nproc) gd
 
 RUN apt update && apt install -y libc-client-dev libkrb5-dev && rm -r /var/lib/apt/lists/*
 
@@ -46,7 +53,7 @@ RUN apt update && apt install -y libc-client-dev libkrb5-dev && rm -r /var/lib/a
 RUN ln -s /usr/include/x86_64-linux-gnu/gmp.h /usr/local/include/
 RUN docker-php-ext-configure opcache --enable-opcache \
 && docker-php-ext-install opcache
-RUN docker-php-ext-install pdo pdo_mysql gd bcmath
+RUN docker-php-ext-install pdo pdo_mysql bcmath
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
