@@ -19,9 +19,9 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:3000', 'kosta.glrd.me', '*'],
+    'allowed_origins' => ['http://localhost:3000', 'kosta.glrd.me', '*', '*.glrd.me'],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => ["*"],
 
     'allowed_headers' => ['*'],
 
