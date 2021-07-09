@@ -64,12 +64,12 @@ class Album extends Model implements HasMedia
         $chunk->map(function ($item) {
             return $item->sortBy('order')->values();
         })->each(function ($item, $index) use ($col) {
-            $array = $item->map(function($sub){
+            $array = $item->map(function ($sub) {
                 //TEMPROY PATCH
-                return ['date' => $sub->media_date, 'url' =>str_replace("localhost", "127.0.0.1:8000",str_replace('storage', 'media', $sub->getFullUrl()))];
+                return ['date' => $sub->media_date, 'url' => str_replace("https", 'http', str_replace("localhost", "127.0.0.1:8000", str_replace('storage', 'media', $sub->getFullUrl())))];
             });
             $date = $item->first()->media_date;
-            $col->push(['titre' =>$date, 'photos' => $array]);
+            $col->push(['titre' => $date, 'photos' => $array]);
         });
 
 

@@ -178,8 +178,16 @@ class AlbumController extends Controller
             $exif = Image::make($request->file('file'))->exif();
             $fileAdder = $album->addMediaFromRequest('file');
             $res = $fileAdder->toMediaCollection('photo');
-            if (isset($exif['DateTimeOriginal'])) {
-                $date = Carbon::parse($exif['DateTimeOriginal'])->format('Y-m-d H:i:s');
+            Log::debug(json_encode($exif));
+            if (isset($exif['DateTimeOriginal']) || isset($exif['DateTime'])) {
+                $date = Carbon::parse(isset($exif['DateTimeOriginal']) ? $exif['DateTimeOriginal'] : $exif['DateTime'])->format('Y-m-d');
+                DB::table('media')->where('id', $res->id)->update([
+                    'media_date' => $date,
+                    //'order'       => $index + 1,
+                    //'chunk_order' => $chunk
+                ]);
+            } else {
+                $date = Carbon::now()->format('Y-m-d');
                 DB::table('media')->where('id', $res->id)->update([
                     'media_date' => $date,
                     //'order'       => $index + 1,
@@ -232,8 +240,9 @@ class AlbumController extends Controller
             $exif = Image::make($request->file('file'))->exif();
             $fileAdder = $album->addMediaFromRequest('file');
             $res = $fileAdder->toMediaCollection('photo');
-            if ($exif['DateTimeOriginal']) {
-                $date = Carbon::parse($exif['DateTimeOriginal'])->format('Y-m-d H:i:s');
+            Log::debug(json_encode($exif));
+            if (isset($exif['DateTimeOriginal']) || isset($exif['DateTime'])) {
+                $date = Carbon::parse(isset($exif['DateTimeOriginal']) ? $exif['DateTimeOriginal'] : $exif['DateTime'])->format('Y-m-d H:i:s');
                 DB::table('media')->where('id', $res->id)->update([
                     'media_date' => $date,
                     //'order'       => $index + 1,
