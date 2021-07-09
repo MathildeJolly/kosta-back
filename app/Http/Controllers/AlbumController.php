@@ -61,7 +61,7 @@ class AlbumController extends Controller
         }
 
 
-        return redirect('/')->with('success', "Vous avez rejoins l'album");
+        return redirect('http://kosta.glrd.me/albums')->with('success', "Vous avez rejoins l'album");
     }
 
     public function inviteCollaborateur(Request $request, $slug)
